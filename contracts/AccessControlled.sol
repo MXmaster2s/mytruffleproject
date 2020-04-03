@@ -1,25 +1,17 @@
+    
 pragma solidity ^0.5.9;
 
-contract AssessControlled{
+contract AccessControlled {
 
-  //Define state variables for the owner and the voting status flag
-  address owner;
-  bool public isVoting;
+    bool public isVoting;
 
-  constructor (address _owner, bool _isVoting) public {
-    isVoting = _isVoting;
-    owner = _owner;
-  }
+    constructor() public {
+        isVoting = false;
+    }
 
-  //we define the modifier used as part of our funtions here
-  modifier onlyOwner {
-    require(msg.sender == owner, "Only the contract owner can perform these functions.");
-    _;
-  }
-
-  modifier voteClosed{
-    require(!isVoting, "Voting is currently open, wait for it to be closed.");
-    _;
-  }
-
+    // We define the modifiers used as part of our functions here.
+    modifier isVotingOpen {
+        require(isVoting == true, "Voting process is not open.");
+        _;
+    }
 }

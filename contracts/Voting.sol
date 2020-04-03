@@ -1,8 +1,9 @@
 pragma solidity ^0.5.9;
 
-import  './AccessControlled.sol';
+import './AccessControlled.sol';
 
-contract Voting is AccessControlled {
+contract Voting is AccessControlled{
+
 
 	// Vote Struct. It defines a custom type to be used to store values for every vote received.
 	struct Vote {
@@ -20,32 +21,24 @@ contract Voting is AccessControlled {
 	event StopVoting(address stoppedBy);
 
 	// Main constructor of the contract. It sets the owner of the contract and the voting status flag to false.
-	constructor() AccessControlled(msg.sender, false) public {
-		//No action required here
+	constructor() public {
+		isVoting = false;
 	}
 
-
-	function startVoting() external onlyOwner returns(bool) {
-		require(!isVoting, "Voting is already OPEN");
-    isVoting = true;
-		emit StartVoting(owner);
+	function startVoting() external returns(bool) {
+		isVoting = true;
+		emit StartVoting(msg.sender);
 		return true;
 	}
 
-
-	function stopVoting() external onlyOwner returns(bool) {
-		require(!isVoting, "Voting is aready CLOSED");
-    isVoting = false;
-		emit StopVoting(owner);
+	function stopVoting() external isVotingOpen returns(bool) {
+		isVoting = false;
+		emit StopVoting(msg.sender);
 		return true;
 	}
 
-
-	function addVote(address receiver) external onlyOwner returns(bool) {
-	  assert(receiver != address(0));
-    require(isVoting, "Voting is currently not open. Please try again later.");
-    require(votes[msg.sender].timestamp == 0, "This user has already voted!");
-
+	function addVote(address receiver) external returns(bool) {
+	
 		// Set values for the Vote struct
 		votes[msg.sender].receiver = receiver;
 		votes[msg.sender].timestamp = now;
@@ -54,19 +47,15 @@ contract Voting is AccessControlled {
 		return true;
 	}
 
+	function removeVote() external returns(bool) {
 
-	function removeVote() external onlyOwner returns(bool) {
-    require(isVoting, "Voting is currently not open. Please try again later.");
-    require(votes[msg.sender].timestamp != 0, "This user has NOT voted yet!");
+		delete votes[msg.sender];
 
-    delete votes[msg.sender];
 		emit RemoveVote(msg.sender);
 		return true;
 	}
 
-
 	function getVote(address voterAddress) external view returns(address candidateAddress) {
-    require(msg.sender=owner, "Only the Owner can perform this opetation");
-    return votes[voterAddress].receiver;
+		return votes[voterAddress].receiver;
 	}
 }
